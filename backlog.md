@@ -19,3 +19,4 @@ Tasks:
 - Register classes
 - Register lesson
 - Create tournament
+- Authentication
