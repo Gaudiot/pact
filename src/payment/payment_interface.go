@@ -3,9 +3,7 @@ package payment
 // MARK: - Models
 
 type PixPaymentRequest struct {
-	AuthKey          string
-	AmountInCents    int
-	ExpiresInSeconds int
+	AmountInCents int
 }
 
 type PixPaymentResponse struct {
@@ -20,5 +18,5 @@ type PixPaymentResponse struct {
 // MARK: - Interface
 
 type PaymentService interface {
-	CreatePixPayment() int
+	CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error)
 }

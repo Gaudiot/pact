@@ -1,0 +1,4 @@
+github.com/AbacatePay/abacatepay-go-sdk v1.0.1-0.20260129160913-2afab81f0aef h1:v07lFaW4gxLnRXNIvBIcfyJJX7ML7JXvWN1lZ4rvDt8=
+github.com/AbacatePay/abacatepay-go-sdk v1.0.1-0.20260129160913-2afab81f0aef/go.mod h1:vJbuk+NlD5IvCV7+9VhNmXpL4YVyCMF1BgODSVJVsrs=
+github.com/AbacatePay/go-types v1.0.2 h1:9StQmWlPSMPs5I4aPidpRuolavBJx/4ewvFRRdRAWpc=
+github.com/AbacatePay/go-types v1.0.2/go.mod h1:ym+D+yWLkZ2Pf1c16JEoRTWUpVrF4tHw/N1ZSxuEYLQ=
