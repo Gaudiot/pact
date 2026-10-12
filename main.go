@@ -1,10 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/pact/core"
+	"github.com/pact/src/payment"
 )
 
 func main() {
@@ -12,5 +14,11 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println("Hello, World!")
+
+	router := chi.NewRouter()
+
+	router.Route("/payment", payment.PaymentRouter)
+
+	log.Printf("Server is running on port :8000\n")
+	http.ListenAndServe(":8000", router)
 }
