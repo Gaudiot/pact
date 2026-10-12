@@ -17,6 +17,6 @@ type PixPaymentResponse struct {
 
 // MARK: - Interface
 
-type PaymentService interface {
+type PaymentGateway interface {
 	CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error)
 }

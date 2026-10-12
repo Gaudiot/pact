@@ -21,8 +21,8 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var paymentService PaymentService = &PaymentServiceImpl{}
-	response, err := paymentService.CreatePixPayment(&PixPaymentRequest{AmountInCents: req.AmountInCents})
+	var paymentGateway PaymentGateway = &PaymentGatewayImpl{}
+	response, err := paymentGateway.CreatePixPayment(&PixPaymentRequest{AmountInCents: req.AmountInCents})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
