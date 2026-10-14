@@ -15,8 +15,26 @@ type PixPaymentResponse struct {
 	ExpiresAt           string
 }
 
+type PaymentStatus string
+
+const (
+	Pending PaymentStatus = "PENDING"
+	Paid    PaymentStatus = "PAID"
+	Expired PaymentStatus = "EXPIRED"
+	Other   PaymentStatus = "OTHER"
+)
+
+type CheckPixPaymentStatusRequest struct {
+	Id string
+}
+
+type CheckPixPaymentStatusResponse struct {
+	Status PaymentStatus
+}
+
 // MARK: - Interface
 
 type PaymentGateway interface {
 	CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error)
+	CheckPixPaymentStatus(request *CheckPixPaymentStatusRequest) (*CheckPixPaymentStatusResponse, error)
 }

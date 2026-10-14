@@ -13,3 +13,11 @@ func (m *MockPaymentGateway) CreatePixPayment(request *PixPaymentRequest) (*PixP
 
 	return response, args.Error(1)
 }
+
+func (m *MockPaymentGateway) CheckPixPaymentStatus(request *CheckPixPaymentStatusRequest) (*CheckPixPaymentStatusResponse, error) {
+	args := m.Called(request)
+
+	response, _ := args.Get(0).(*CheckPixPaymentStatusResponse)
+
+	return response, args.Error(1)
+}

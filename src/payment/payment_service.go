@@ -26,3 +26,9 @@ func (ps *PaymentService) CreatePix(amountInCents int) error {
 
 	return nil
 }
+
+func (ps *PaymentService) CheckPixStatus(id string) error {
+	_, err := ps.gateway.CheckPixPaymentStatus(&CheckPixPaymentStatusRequest{Id: id})
+
+	return err
+}

@@ -9,6 +9,7 @@ import (
 )
 
 func PaymentRouter(r chi.Router) {
+	r.Get("/status/{ID}", handleGetPaymentStatus)
 	r.Post("/", handleRoot)
 }
 
@@ -21,13 +22,18 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var paymentGateway PaymentGateway = &PaymentGatewayImpl{}
+	var paymentGateway PaymentGateway = &AbacatepayPaymentGatewayImpl{}
 	response, err := paymentGateway.CreatePixPayment(&PixPaymentRequest{AmountInCents: req.AmountInCents})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 	w.Write([]byte(strconv.Itoa(response.AmountInCents) + "|%%|" + response.PaymentCode + " |%%| " + response.PaymentQRCodeBase64))
+}
+
+func handleGetPaymentStatus(w http.ResponseWriter, r *http.Request) {
+	paymentId := chi.URLParam(r, "ID")
+	var _ = paymentId
 }
 
 // MARK: - Improve later

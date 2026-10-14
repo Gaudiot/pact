@@ -6,35 +6,49 @@ import (
 
 	"github.com/AbacatePay/abacatepay-go-sdk/v1"
 	"github.com/AbacatePay/abacatepay-go-sdk/v1/pix"
+	v1 "github.com/AbacatePay/go-types/v1"
+	"github.com/pact/core"
 )
 
-var _ PaymentService = &PaymentServiceImpl{}
+var _ PaymentGateway = &AbacatepayPaymentGatewayImpl{}
 
-type PaymentServiceImpl struct{}
+type AbacatepayPaymentGatewayImpl struct {
+	client *abacatepay.Client
+}
 
-const (
-	CLIENT_TIMEOUT      = 10 * time.Second
-	PIX_PAYMENT_TIMEOUT = 15 * time.Second
-)
-
-func (ps *PaymentServiceImpl) CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error) {
+func NewAbacatepayPaymentGatewayImpl() (PaymentGateway, error) {
+	apiKey := core.GetEnvConfig().AbacatePayAPIKey()
 	client, err := abacatepay.New(abacatepay.ClientConfig{
-		APIKey:  "abc_dev_nzDCTjHsp0P0WP3Xj3ZXdhHM",
+		APIKey:  apiKey,
 		Timeout: CLIENT_TIMEOUT,
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	return &AbacatepayPaymentGatewayImpl{
+		client: client,
+	}, nil
+}
+
+const (
+	CLIENT_TIMEOUT      = 10 * time.Second
+	PIX_PAYMENT_TIMEOUT = 15 * time.Second
+)
+
+func (pg *AbacatepayPaymentGatewayImpl) CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PIX_PAYMENT_TIMEOUT)
 	defer cancel()
 
-	response, err := client.PIX.Create(
+	response, err := pg.client.PIX.Create(
 		ctx,
 		pix.CreateQrCodePIXBody{
 			Amount: request.AmountInCents,
 		},
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	data := response.Data
 	pixResponse := PixPaymentResponse{
@@ -47,4 +61,30 @@ func (ps *PaymentServiceImpl) CreatePixPayment(request *PixPaymentRequest) (*Pix
 	}
 
 	return &pixResponse, nil
+}
+
+func (pg *AbacatepayPaymentGatewayImpl) CheckPixPaymentStatus(request *CheckPixPaymentStatusRequest) (*CheckPixPaymentStatusResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), PIX_PAYMENT_TIMEOUT)
+	defer cancel()
+
+	result, err := pg.client.PIX.Status(ctx, request.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	var status PaymentStatus
+	switch result.Data.Status {
+	case v1.PaymentStatusPending:
+		status = Pending
+	case v1.PaymentStatusPaid:
+		status = Paid
+	case v1.PaymentStatusExpired:
+		status = Expired
+	default:
+		status = Other
+	}
+
+	return &CheckPixPaymentStatusResponse{
+		Status: status,
+	}, nil
 }
