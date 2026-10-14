@@ -1,7 +1,9 @@
 package gateway
 
 import (
+	"encoding/base64"
 	"fmt"
+	"strings"
 
 	"github.com/pact/core"
 	"github.com/resend/resend-go/v4"
@@ -21,25 +23,44 @@ func NewResendEmailGateway() EmailGateway {
 	}
 }
 
-func (eg *resendEmailGatewayImpl) SendPixPaymentEmail(args pixSendPixPaymentEmailArgs) error {
+func (eg *resendEmailGatewayImpl) SendPixPaymentEmail(args *PixSendPixPaymentEmailArgs) error {
 	amount := fmt.Sprintf("R$%d,%02d", args.AmountInCents/100, args.AmountInCents%100)
 	expirationDate := args.ExpirationDate.Format("02/01/2006")
+
+	qrCodeBase64 := args.PixQRCode
+	if index := strings.Index(qrCodeBase64, ","); index != -1 {
+		qrCodeBase64 = qrCodeBase64[index+1:]
+	}
+
+	qrCodeBytes, err := base64.StdEncoding.DecodeString(
+		strings.TrimSpace(qrCodeBase64),
+	)
+	if err != nil {
+		return err
+	}
 
 	params := &resend.SendEmailRequest{
 		From:    "CTCL <ctcl-noreply@gaudiot.com>",
 		To:      []string{args.ReceiverEmail},
 		Subject: "Pix Payment",
 		Template: &resend.EmailTemplate{
-			Id: "pix-payment",
+			Id: "pact_pix_payment",
 			Variables: map[string]any{
-				"amount":         amount,
-				"companyName":    args.CompanyName,
-				"expirationDate": expirationDate,
-				"pixCode":        args.PixCode,
-				"pixQRCode":      args.PixQRCode,
+				"name":            args.UserName,
+				"amount":          amount,
+				"company_name":    args.CompanyName,
+				"expiration_date": expirationDate,
+				"pix_code":        args.PixCode,
 			},
 		},
-		// Html:    "<p>Pix Payment {" + amount + "} {companyName} {" + expirationDate + "} {pixCode} {pixQRCode}</p>",
+		Attachments: []*resend.Attachment{
+			{
+				Filename:    "pix.png",
+				Content:     qrCodeBytes,
+				ContentType: "image/png",
+				ContentId:   "pix-qrcode",
+			},
+		},
 	}
 
 	sent, err := eg.client.Emails.Send(params)

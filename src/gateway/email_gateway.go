@@ -2,7 +2,7 @@ package gateway
 
 import "time"
 
-type pixSendPixPaymentEmailArgs struct {
+type PixSendPixPaymentEmailArgs struct {
 	UserName       string
 	AmountInCents  int
 	CompanyName    string
@@ -13,5 +13,5 @@ type pixSendPixPaymentEmailArgs struct {
 }
 
 type EmailGateway interface {
-	SendPixPaymentEmail(args pixSendPixPaymentEmailArgs) error
+	SendPixPaymentEmail(args *PixSendPixPaymentEmailArgs) error
 }
