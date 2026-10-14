@@ -4,3 +4,5 @@ github.com/AbacatePay/go-types v1.0.2 h1:9StQmWlPSMPs5I4aPidpRuolavBJx/4ewvFRRdR
 github.com/AbacatePay/go-types v1.0.2/go.mod h1:ym+D+yWLkZ2Pf1c16JEoRTWUpVrF4tHw/N1ZSxuEYLQ=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/resend/resend-go/v4 v4.8.2 h1:L6XxAmHj8+o7TWs/nwMGysdoXy594qu4/42rFqkp7s8=
+github.com/resend/resend-go/v4 v4.8.2/go.mod h1:96jCV9Fb2HoQAnPOgGXURcbBZxCtLrul8e5iwKJ/E/g=
