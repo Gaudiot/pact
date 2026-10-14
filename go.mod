@@ -6,4 +6,5 @@ require (
 	github.com/AbacatePay/abacatepay-go-sdk v1.0.1-0.20260129160913-2afab81f0aef // indirect
 	github.com/AbacatePay/go-types v1.0.2 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
+	github.com/resend/resend-go/v4 v4.8.2 // indirect
 )
