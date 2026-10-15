@@ -10,9 +10,9 @@ import (
 	"github.com/pact/core"
 )
 
-var _ PaymentGateway = &AbacatepayPaymentGatewayImpl{}
+var _ PaymentGateway = &abacatepayPaymentGatewayImpl{}
 
-type AbacatepayPaymentGatewayImpl struct {
+type abacatepayPaymentGatewayImpl struct {
 	client *abacatepay.Client
 }
 
@@ -26,7 +26,7 @@ func NewAbacatepayPaymentGatewayImpl() (PaymentGateway, error) {
 		return nil, err
 	}
 
-	return &AbacatepayPaymentGatewayImpl{
+	return &abacatepayPaymentGatewayImpl{
 		client: client,
 	}, nil
 }
@@ -36,7 +36,7 @@ const (
 	PIX_PAYMENT_TIMEOUT = 15 * time.Second
 )
 
-func (pg *AbacatepayPaymentGatewayImpl) CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error) {
+func (pg *abacatepayPaymentGatewayImpl) CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PIX_PAYMENT_TIMEOUT)
 	defer cancel()
 
@@ -63,7 +63,7 @@ func (pg *AbacatepayPaymentGatewayImpl) CreatePixPayment(request *PixPaymentRequ
 	return &pixResponse, nil
 }
 
-func (pg *AbacatepayPaymentGatewayImpl) CheckPixPaymentStatus(request *CheckPixPaymentStatusRequest) (*CheckPixPaymentStatusResponse, error) {
+func (pg *abacatepayPaymentGatewayImpl) CheckPixPaymentStatus(request *CheckPixPaymentStatusRequest) (*CheckPixPaymentStatusResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PIX_PAYMENT_TIMEOUT)
 	defer cancel()
 

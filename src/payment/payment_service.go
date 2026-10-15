@@ -1,14 +1,21 @@
 package payment
 
-import "errors"
+import (
+	"errors"
+	"time"
+
+	"github.com/pact/src/gateway"
+)
 
 type PaymentService struct {
-	gateway PaymentGateway
+	gateway      PaymentGateway
+	emailGateway gateway.EmailGateway
 }
 
-func NewPaymentService(paymentGateway PaymentGateway) *PaymentService {
+func NewPaymentService(paymentGateway PaymentGateway, emailGateway gateway.EmailGateway) *PaymentService {
 	return &PaymentService{
-		gateway: paymentGateway,
+		paymentGateway,
+		emailGateway,
 	}
 }
 
@@ -17,12 +24,22 @@ func (ps *PaymentService) CreatePix(amountInCents int) error {
 		return errors.New("Amount is not a positive number.")
 	}
 
-	_, err := ps.gateway.CreatePixPayment(&PixPaymentRequest{
+	pixResponse, err := ps.gateway.CreatePixPayment(&PixPaymentRequest{
 		AmountInCents: amountInCents,
 	})
 	if err != nil {
 		return err
 	}
+
+	ps.emailGateway.SendPixPaymentEmail(&gateway.PixSendPixPaymentEmailArgs{
+		UserName:       "gaudiot1",
+		AmountInCents:  pixResponse.AmountInCents,
+		CompanyName:    "Fofolinda",
+		ExpirationDate: time.Now().Add(time.Hour * 24 * 7),
+		PixCode:        pixResponse.PaymentCode,
+		PixQRCode:      pixResponse.PaymentQRCodeBase64,
+		ReceiverEmail:  "gaudiot.dev@gmail.com",
+	})
 
 	return nil
 }

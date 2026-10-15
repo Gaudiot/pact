@@ -22,7 +22,10 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var paymentGateway PaymentGateway = &AbacatepayPaymentGatewayImpl{}
+	paymentGateway, err := NewAbacatepayPaymentGatewayImpl()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 	response, err := paymentGateway.CreatePixPayment(&PixPaymentRequest{AmountInCents: req.AmountInCents})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
