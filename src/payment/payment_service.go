@@ -7,6 +7,10 @@ import (
 	"github.com/pact/src/gateway"
 )
 
+var (
+	ErrInvalidAmount = errors.New("amount must be greater than zero")
+)
+
 type PaymentService struct {
 	gateway      PaymentGateway
 	emailGateway gateway.EmailGateway
@@ -21,7 +25,7 @@ func NewPaymentService(paymentGateway PaymentGateway, emailGateway gateway.Email
 
 func (ps *PaymentService) CreatePix(amountInCents int) error {
 	if amountInCents <= 0 {
-		return errors.New("Amount is not a positive number.")
+		return ErrInvalidAmount
 	}
 
 	pixResponse, err := ps.gateway.CreatePixPayment(&PixPaymentRequest{
@@ -31,7 +35,7 @@ func (ps *PaymentService) CreatePix(amountInCents int) error {
 		return err
 	}
 
-	ps.emailGateway.SendPixPaymentEmail(&gateway.PixSendPixPaymentEmailArgs{
+	err = ps.emailGateway.SendPixPaymentEmail(&gateway.PixSendPixPaymentEmailArgs{
 		UserName:       "gaudiot1",
 		AmountInCents:  pixResponse.AmountInCents,
 		CompanyName:    "Fofolinda",
@@ -40,6 +44,9 @@ func (ps *PaymentService) CreatePix(amountInCents int) error {
 		PixQRCode:      pixResponse.PaymentQRCodeBase64,
 		ReceiverEmail:  "gaudiot.dev@gmail.com",
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
