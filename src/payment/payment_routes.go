@@ -3,9 +3,10 @@ package payment
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	student_repository "github.com/pact/core/database/repository/student"
+	"github.com/pact/src/gateway"
 	payment_gateway "github.com/pact/src/gateway/payment"
 )
 
@@ -19,20 +20,30 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	var req PaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	studentRepository, err := student_repository.NewPgxStudentRepository("")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	paymentGateway, err := payment_gateway.NewAbacatepayPaymentGatewayImpl()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	response, err := paymentGateway.CreatePixPayment(&payment_gateway.PixPaymentRequest{AmountInCents: req.AmountInCents})
+	emailGateway := gateway.NewResendEmailGateway()
+	paymentService := NewPaymentService(studentRepository, paymentGateway, emailGateway)
+
+	err = paymentService.CreatePix(req.StudentId, req.AmountInCents)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	w.Write([]byte(strconv.Itoa(response.AmountInCents) + "|%%|" + response.PaymentCode + " |%%| " + response.PaymentQRCodeBase64))
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func handleGetPaymentStatus(w http.ResponseWriter, r *http.Request) {
@@ -43,5 +54,6 @@ func handleGetPaymentStatus(w http.ResponseWriter, r *http.Request) {
 // MARK: - Improve later
 
 type PaymentRequest struct {
-	AmountInCents int `json:"amount_in_cents"`
+	StudentId     string `json:"student_id"`
+	AmountInCents int    `json:"amount_in_cents"`
 }
