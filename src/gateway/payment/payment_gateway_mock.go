@@ -1,4 +1,4 @@
-package payment
+package payment_gateway
 
 import "github.com/stretchr/testify/mock"
 

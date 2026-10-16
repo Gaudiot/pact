@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	payment_gateway "github.com/pact/src/gateway/payment"
 )
 
 func PaymentRouter(r chi.Router) {
@@ -22,11 +23,11 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	paymentGateway, err := NewAbacatepayPaymentGatewayImpl()
+	paymentGateway, err := payment_gateway.NewAbacatepayPaymentGatewayImpl()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-	response, err := paymentGateway.CreatePixPayment(&PixPaymentRequest{AmountInCents: req.AmountInCents})
+	response, err := paymentGateway.CreatePixPayment(&payment_gateway.PixPaymentRequest{AmountInCents: req.AmountInCents})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 	}

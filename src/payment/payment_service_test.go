@@ -5,18 +5,19 @@ import (
 	"testing"
 
 	"github.com/pact/src/gateway"
+	payment_gateway "github.com/pact/src/gateway/payment"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func setupTest(t *testing.T) (
 	*PaymentService,
-	*MockPaymentGateway,
+	*payment_gateway.MockPaymentGateway,
 	*gateway.MockEmailGateway,
 ) {
 	t.Helper()
 
-	paymentGateway := new(MockPaymentGateway)
+	paymentGateway := new(payment_gateway.MockPaymentGateway)
 	emailGateway := new(gateway.MockEmailGateway)
 
 	sut := NewPaymentService(paymentGateway, emailGateway)
@@ -27,7 +28,7 @@ func setupTest(t *testing.T) (
 func TestCreatePix(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		sut, mockPaymentGateway, mockEmailGateway := setupTest(t)
-		expected := &PixPaymentResponse{
+		expected := &payment_gateway.PixPaymentResponse{
 			Id:                  "pix-123",
 			AmountInCents:       1000,
 			PaymentCode:         "code",
@@ -99,7 +100,7 @@ func TestCreatePix(t *testing.T) {
 	})
 	t.Run("Email Gateway Error", func(t *testing.T) {
 		sut, mockPaymentGateway, mockEmailGateway := setupTest(t)
-		expected := &PixPaymentResponse{
+		expected := &payment_gateway.PixPaymentResponse{
 			Id:                  "pix-123",
 			AmountInCents:       1000,
 			PaymentCode:         "code",

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pact/src/gateway"
+	payment_gateway "github.com/pact/src/gateway/payment"
 )
 
 var (
@@ -12,11 +13,11 @@ var (
 )
 
 type PaymentService struct {
-	gateway      PaymentGateway
+	gateway      payment_gateway.PaymentGateway
 	emailGateway gateway.EmailGateway
 }
 
-func NewPaymentService(paymentGateway PaymentGateway, emailGateway gateway.EmailGateway) *PaymentService {
+func NewPaymentService(paymentGateway payment_gateway.PaymentGateway, emailGateway gateway.EmailGateway) *PaymentService {
 	return &PaymentService{
 		paymentGateway,
 		emailGateway,
@@ -28,7 +29,7 @@ func (ps *PaymentService) CreatePix(amountInCents int) error {
 		return ErrInvalidAmount
 	}
 
-	pixResponse, err := ps.gateway.CreatePixPayment(&PixPaymentRequest{
+	pixResponse, err := ps.gateway.CreatePixPayment(&payment_gateway.PixPaymentRequest{
 		AmountInCents: amountInCents,
 	})
 	if err != nil {
@@ -52,7 +53,7 @@ func (ps *PaymentService) CreatePix(amountInCents int) error {
 }
 
 func (ps *PaymentService) CheckPixStatus(id string) error {
-	_, err := ps.gateway.CheckPixPaymentStatus(&CheckPixPaymentStatusRequest{Id: id})
+	_, err := ps.gateway.CheckPixPaymentStatus(&payment_gateway.CheckPixPaymentStatusRequest{Id: id})
 
 	return err
 }
