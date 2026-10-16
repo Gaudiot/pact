@@ -6,13 +6,13 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-var _ StudentRepository = &MockStudentRepository{}
+var _ Repository = &MockRepository{}
 
-type MockStudentRepository struct {
+type MockRepository struct {
 	mock.Mock
 }
 
-func (m *MockStudentRepository) Create(ctx context.Context, params *CreateStudentParams) (*Student, error) {
+func (m *MockRepository) Create(ctx context.Context, params *CreateStudentParams) (*Student, error) {
 	args := m.Called(ctx, params)
 
 	response, _ := args.Get(0).(*Student)
@@ -20,7 +20,7 @@ func (m *MockStudentRepository) Create(ctx context.Context, params *CreateStuden
 	return response, args.Error(1)
 }
 
-func (m *MockStudentRepository) GetByID(ctx context.Context, id string) (*Student, error) {
+func (m *MockRepository) GetByID(ctx context.Context, id string) (*Student, error) {
 	args := m.Called(ctx, id)
 
 	response, _ := args.Get(0).(*Student)

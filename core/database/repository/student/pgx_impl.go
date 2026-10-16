@@ -3,10 +3,11 @@ package student_repository
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var _ StudentRepository = &pgxStudentRepository{}
+var _ Repository = &pgxStudentRepository{}
 
 type pgxStudentRepository struct {
 	pool *pgxpool.Pool
@@ -27,7 +28,7 @@ func pgxPoolConnect(databaseURL string) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-func NewPgxStudentRepository(databaseURL string) (StudentRepository, error) {
+func NewPgxStudentRepository(databaseURL string) (Repository, error) {
 	pool, err := pgxPoolConnect(databaseURL)
 	if err != nil {
 		return nil, err
@@ -39,7 +40,7 @@ func NewPgxStudentRepository(databaseURL string) (StudentRepository, error) {
 
 func (sr *pgxStudentRepository) Create(ctx context.Context, params *CreateStudentParams) (*Student, error) {
 	query := `
-	 INSERT INTO students (name, email)
+	 INSERT INTO users (name, email)
 	 VALUES ($1, $2)
 	 RETURNING *
 	`
@@ -59,7 +60,7 @@ func (sr *pgxStudentRepository) Create(ctx context.Context, params *CreateStuden
 func (sr *pgxStudentRepository) GetByID(ctx context.Context, id string) (*Student, error) {
 	query := `
 		SELECT * 
-		FROM students 
+		FROM users 
 		WHERE id = $1
 	`
 	row := sr.pool.QueryRow(ctx, query, id)
@@ -69,6 +70,9 @@ func (sr *pgxStudentRepository) GetByID(ctx context.Context, id string) (*Studen
 		&student.Name,
 		&student.Email,
 	)
+	if err == pgx.ErrNoRows {
+		return nil, ErrStudentNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
