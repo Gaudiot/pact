@@ -8,7 +8,12 @@ type Student struct {
 	Email string
 }
 
+type CreateStudentParams struct {
+	Name  string
+	Email string
+}
+
 type StudentRepository interface {
-	Create(ctx context.Context, student *Student) error
+	Create(ctx context.Context, params *CreateStudentParams) (*Student, error)
 	GetByID(ctx context.Context, id string) (*Student, error)
 }

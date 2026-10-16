@@ -12,10 +12,12 @@ type MockStudentRepository struct {
 	mock.Mock
 }
 
-func (m *MockStudentRepository) Create(ctx context.Context, student *Student) error {
-	args := m.Called(ctx, student)
+func (m *MockStudentRepository) Create(ctx context.Context, params *CreateStudentParams) (*Student, error) {
+	args := m.Called(ctx, params)
 
-	return args.Error(0)
+	response, _ := args.Get(0).(*Student)
+
+	return response, args.Error(1)
 }
 
 func (m *MockStudentRepository) GetByID(ctx context.Context, id string) (*Student, error) {
