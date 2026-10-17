@@ -41,7 +41,8 @@ func (ps *PaymentService) CreatePix(userId string, amountInCents int) error {
 	}
 
 	pixResponse, err := ps.paymentGateway.CreatePixPayment(&payment_gateway.PixPaymentRequest{
-		AmountInCents: amountInCents,
+		AmountInCents:    amountInCents,
+		ExpiresInSeconds: int(pixExpirationTime.Seconds()),
 	})
 	if err != nil {
 		return err

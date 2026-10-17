@@ -3,7 +3,8 @@ package payment_gateway
 // MARK: - Models
 
 type PixPaymentRequest struct {
-	AmountInCents int
+	ExpiresInSeconds int
+	AmountInCents    int
 }
 
 type PixPaymentResponse struct {

@@ -10,6 +10,11 @@ import (
 	"github.com/pact/core"
 )
 
+const (
+	CLIENT_TIMEOUT      = 10 * time.Second
+	PIX_PAYMENT_TIMEOUT = 15 * time.Second
+)
+
 var _ PaymentGateway = &abacatepayPaymentGatewayImpl{}
 
 type abacatepayPaymentGatewayImpl struct {
@@ -31,11 +36,6 @@ func NewAbacatepayPaymentGatewayImpl() (PaymentGateway, error) {
 	}, nil
 }
 
-const (
-	CLIENT_TIMEOUT      = 10 * time.Second
-	PIX_PAYMENT_TIMEOUT = 15 * time.Second
-)
-
 func (pg *abacatepayPaymentGatewayImpl) CreatePixPayment(request *PixPaymentRequest) (*PixPaymentResponse, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), PIX_PAYMENT_TIMEOUT)
 	defer cancel()
@@ -43,7 +43,8 @@ func (pg *abacatepayPaymentGatewayImpl) CreatePixPayment(request *PixPaymentRequ
 	response, err := pg.client.PIX.Create(
 		ctx,
 		pix.CreateQrCodePIXBody{
-			Amount: request.AmountInCents,
+			Amount:    request.AmountInCents,
+			ExpiresIn: &request.ExpiresInSeconds,
 		},
 	)
 	if err != nil {

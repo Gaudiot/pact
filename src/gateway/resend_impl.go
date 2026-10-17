@@ -24,7 +24,7 @@ func NewResendEmailGateway() EmailGateway {
 }
 
 func (eg *resendEmailGatewayImpl) SendPixPaymentEmail(args *PixSendPixPaymentEmailArgs) error {
-	amount := fmt.Sprintf("R$%d,%02d", args.AmountInCents/100, args.AmountInCents%100)
+	amount := fmt.Sprintf("%d,%02d", args.AmountInCents/100, args.AmountInCents%100)
 	expirationDate := args.ExpirationDate.Format("02/01/2006")
 
 	qrCodeBase64 := args.PixQRCode
