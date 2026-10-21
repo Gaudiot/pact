@@ -44,6 +44,10 @@ func (router *userRouter) handleGetUsers(w http.ResponseWriter, r *http.Request)
 	query := r.URL.Query()
 	name := query.Get("name")
 
+	if name == "" {
+		http.Error(w, "Missing \"Name\" param", http.StatusBadRequest)
+	}
+
 	users, err := router.studentRepository.GetByName(ctx, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -74,7 +78,7 @@ func (router *userRouter) handleCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }

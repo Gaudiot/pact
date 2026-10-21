@@ -17,7 +17,8 @@ type CreateStudentParams struct {
 }
 
 var (
-	ErrStudentNotFound = errors.New("Student not found")
+	ErrStudentNotFound        = errors.New("Student not found")
+	ErrEmailAlreadyRegistered = errors.New("Email already registered")
 )
 
 type Repository interface {
