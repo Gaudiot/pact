@@ -56,5 +56,23 @@ func (us *UserService) GetUser(id string) (*struct{ Id, Name string }, error) {
 }
 
 func (us *UserService) GetByName(name string) ([]struct{ Id, Name string }, error) {
-	return nil, nil
+	ctx := context.Background()
+
+	usersResult, err := us.studentRepository.GetByName(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	users := []struct{ Id, Name string }{}
+	for _, user := range usersResult {
+		users = append(users, struct {
+			Id   string
+			Name string
+		}{
+			Id:   user.ID,
+			Name: user.Name,
+		})
+	}
+
+	return users, nil
 }
