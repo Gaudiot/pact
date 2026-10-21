@@ -23,4 +23,5 @@ var (
 type Repository interface {
 	Create(ctx context.Context, params *CreateStudentParams) (*Student, error)
 	GetByID(ctx context.Context, id string) (*Student, error)
+	GetByName(ctx context.Context, name string) ([]*Student, error)
 }

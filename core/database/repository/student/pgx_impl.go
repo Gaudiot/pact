@@ -80,6 +80,10 @@ func (sr *pgxStudentRepository) GetByID(ctx context.Context, id string) (*Studen
 	return &student, nil
 }
 
+func (sr *pgxStudentRepository) GetByName(ctx context.Context, name string) ([]*Student, error) {
+	return nil, nil
+}
+
 func (sr *pgxStudentRepository) Close() {
 	if sr.pool != nil {
 		sr.pool.Close()

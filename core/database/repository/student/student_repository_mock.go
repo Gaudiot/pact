@@ -27,3 +27,11 @@ func (m *MockRepository) GetByID(ctx context.Context, id string) (*Student, erro
 
 	return response, args.Error(1)
 }
+
+func (m *MockRepository) GetByName(ctx context.Context, name string) ([]*Student, error) {
+	args := m.Called(ctx, name)
+
+	response, _ := args.Get(0).([]*Student)
+
+	return response, args.Error(1)
+}
