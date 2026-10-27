@@ -10,6 +10,7 @@ import (
 type apiKeys struct {
 	abacatePayAPIKey string
 	resendAPIKey     string
+	clerkSecretKey   string
 }
 
 type EnvConfig struct {
@@ -52,9 +53,15 @@ func loadAPIKeysConfig() (apiKeys, error) {
 		return apiKeys{}, errors.New("RESEND_API_KEY is required.")
 	}
 
+	clerkSecretKey := os.Getenv("RESEND_API_KEY")
+	if clerkSecretKey == "" {
+		return apiKeys{}, errors.New("RESEND_API_KEY is required.")
+	}
+
 	return apiKeys{
 		abacatePayAPIKey: abacatePayAPIKey,
 		resendAPIKey:     resendAPIKey,
+		clerkSecretKey:   clerkSecretKey,
 	}, nil
 }
 
@@ -66,4 +73,8 @@ func (ec EnvConfig) AbacatePayAPIKey() string {
 
 func (ec EnvConfig) ResendAPIKey() string {
 	return ec.apiKeys.resendAPIKey
+}
+
+func (ec EnvConfig) ClerkSecretKey() string {
+	return ec.apiKeys.clerkSecretKey
 }

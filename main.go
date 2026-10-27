@@ -4,9 +4,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/pact/core"
 	student_repository "github.com/pact/core/database/repository/student"
+	"github.com/pact/core/middleware"
 	"github.com/pact/src/payment"
 	"github.com/pact/src/user"
 )
@@ -17,7 +19,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	bootstrap()
+
 	router := chi.NewRouter()
+
+	router.Use(middleware.AuthMiddleware)
 
 	userRouter := user.NewUserRouter(
 		student_repository.NewStub(),
@@ -27,4 +33,10 @@ func main() {
 
 	log.Printf("Server is running on port :8000\n")
 	http.ListenAndServe(":8000", router)
+}
+
+func bootstrap() {
+	cfg := core.GetEnvConfig()
+
+	clerk.SetKey(cfg.ClerkSecretKey())
 }
