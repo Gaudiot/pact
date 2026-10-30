@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 	"uuid"
+
+	"github.com/pact/core/database/repository"
 )
 
 var _ Repository = &stub{}
@@ -14,7 +16,28 @@ type stub struct {
 
 func NewStub() *stub {
 	return &stub{
-		students: map[string]*Student{},
+		students: map[string]*Student{
+			"1": {
+				ID:    "1",
+				Name:  "Victor",
+				Email: "victor@gaudiot.com",
+			},
+			"2": {
+				ID:    "2",
+				Name:  "Mylena",
+				Email: "mylena@oliveira.com.br",
+			},
+			"3": {
+				ID:    "3",
+				Name:  "John Doe",
+				Email: "john@doe.com",
+			},
+			"4": {
+				ID:    "4",
+				Name:  "Victor",
+				Email: "victor@fake.com",
+			},
+		},
 	}
 }
 
@@ -38,16 +61,23 @@ func (s *stub) GetByID(ctx context.Context, id string) (*Student, error) {
 	return student, nil
 }
 
-func (s *stub) GetByName(ctx context.Context, name string) ([]*Student, error) {
-	students := []*Student{}
+func (s *stub) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) ([]*Student, error) {
+	filteredStudents := []*Student{}
 
-	lowerName := strings.ToLower(name)
 	for _, student := range s.students {
-		lowerStudentName := strings.ToLower(student.Name)
-		if lowerName == lowerStudentName {
-			students = append(students, student)
+		if params.Name != "" && !strings.HasPrefix(strings.ToLower(student.Name), strings.ToLower(params.Name)) {
+			continue
 		}
+
+		filteredStudents = append(filteredStudents, student)
 	}
+
+	start := pagination.Page * pagination.Limit
+	if start >= len(filteredStudents) {
+		return nil, nil
+	}
+	end := min(start+pagination.Limit, len(filteredStudents))
+	students := filteredStudents[start:end]
 
 	return students, nil
 }

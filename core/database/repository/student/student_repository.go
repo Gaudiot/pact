@@ -3,6 +3,8 @@ package student_repository
 import (
 	"context"
 	"errors"
+
+	"github.com/pact/core/database/repository"
 )
 
 type Student struct {
@@ -16,6 +18,10 @@ type CreateStudentParams struct {
 	Email string
 }
 
+type GetUsersParams struct {
+	Name string
+}
+
 var (
 	ErrStudentNotFound        = errors.New("Student not found")
 	ErrEmailAlreadyRegistered = errors.New("Email already registered")
@@ -24,5 +30,5 @@ var (
 type Repository interface {
 	Create(ctx context.Context, params *CreateStudentParams) (*Student, error)
 	GetByID(ctx context.Context, id string) (*Student, error)
-	GetByName(ctx context.Context, name string) ([]*Student, error)
+	GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) ([]*Student, error)
 }

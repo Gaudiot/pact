@@ -1,21 +1,21 @@
 package user
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	student_repository "github.com/pact/core/database/repository/student"
+	"github.com/pact/core/utils"
 )
 
 type userRouter struct {
-	studentRepository student_repository.Repository
+	userService UserService
 }
 
-func NewUserRouter(repository student_repository.Repository) *userRouter {
-	return &userRouter{studentRepository: repository}
+func NewUserRouter(userService *UserService) *userRouter {
+	return &userRouter{userService: *userService}
 }
 
 func (router *userRouter) Router(r chi.Router) {
@@ -25,42 +25,59 @@ func (router *userRouter) Router(r chi.Router) {
 }
 
 func (router *userRouter) handleGetUser(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
 	userID := chi.URLParam(r, "ID")
 
-	user, err := router.studentRepository.GetByID(ctx, userID)
+	user, err := router.userService.GetUser(r.Context(), userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		if errors.Is(err, student_repository.ErrStudentNotFound) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
 }
 
 func (router *userRouter) handleGetUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
 	query := r.URL.Query()
-	name := query.Get("name")
 
-	if name == "" {
-		http.Error(w, "Missing \"Name\" param", http.StatusBadRequest)
+	params := &student_repository.GetUsersParams{}
+
+	if name := query.Get("name"); name != "" {
+		params.Name = name
 	}
 
-	users, err := router.studentRepository.GetByName(ctx, name)
+	page, limit, err := utils.ParsePagination(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	users, err := router.userService.ListUsers(
+		r.Context(),
+		ListUserParams{
+			Name:  params.Name,
+			Page:  page,
+			Limit: limit,
+		},
+	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 }
 
 func (router *userRouter) handleCreateUser(w http.ResponseWriter, r *http.Request) {
-	var req UserRequest
+	var req createUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -71,21 +88,20 @@ func (router *userRouter) handleCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userService := NewUserService(router.studentRepository)
-	user, err := userService.CreateUser(req.Name, req.Email)
+	user, err := router.userService.CreateUser(r.Context(), req.Name, req.Email)
 	if err != nil {
-		http.Error(w, errors.New("").Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(user)
 }
 
 // MARK: - Improve later
 
-type UserRequest struct {
+type createUserRequest struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }

@@ -23,16 +23,22 @@ func main() {
 
 	router := chi.NewRouter()
 
-	router.Use(middleware.AuthMiddleware)
-
+	studentRepository := student_repository.NewStub()
+	userService := user.NewUserService(studentRepository)
 	userRouter := user.NewUserRouter(
-		student_repository.NewStub(),
+		userService,
 	)
-	router.Route("/payment", payment.PaymentRouter)
+	router.Group(func(r chi.Router) {
+		r.Use(middleware.AuthMiddleware)
+		router.Route("/payment", payment.PaymentRouter)
+	})
 	router.Route("/user", userRouter.Router)
 
 	log.Printf("Server is running on port :8000\n")
-	http.ListenAndServe(":8000", router)
+	err = http.ListenAndServe(":8000", router)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
 
 func bootstrap() {

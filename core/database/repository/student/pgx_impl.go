@@ -2,9 +2,11 @@ package student_repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/pact/core/database/repository"
 )
 
 var _ Repository = &pgxStudentRepository{}
@@ -80,8 +82,48 @@ func (sr *pgxStudentRepository) GetByID(ctx context.Context, id string) (*Studen
 	return &student, nil
 }
 
-func (sr *pgxStudentRepository) GetByName(ctx context.Context, name string) ([]*Student, error) {
-	return nil, nil
+func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) ([]*Student, error) {
+	query := `
+		SELECT *
+		FROM users
+		WHERE 1=1
+	`
+	args := []any{}
+
+	if params.Name != "" {
+		args = append(args, "%"+params.Name+"%")
+		query += fmt.Sprintf(" AND name ILIKE $%d", len(args))
+	}
+
+	args = append(args, pagination.Limit)
+	query += fmt.Sprintf(" ORDER BY id LIMIT $%d", len(args))
+
+	args = append(args, pagination.Page*pagination.Limit)
+	query += fmt.Sprintf(" OFFSET $%d", len(args))
+
+	rows, err := sr.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := []*Student{}
+	for rows.Next() {
+		var user Student
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Name,
+			&user.Email,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
 }
 
 func (sr *pgxStudentRepository) Close() {
