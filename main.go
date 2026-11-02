@@ -8,8 +8,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/pact/core"
 	student_repository "github.com/pact/core/database/repository/student"
+	subscription_plan_repository "github.com/pact/core/database/repository/subscription_plan"
 	"github.com/pact/core/middleware"
 	"github.com/pact/src/payment"
+	"github.com/pact/src/subscription_plan"
 	"github.com/pact/src/user"
 )
 
@@ -28,10 +30,14 @@ func main() {
 	userRouter := user.NewUserRouter(
 		userService,
 	)
+	subscriptionPlanRepository := subscription_plan_repository.NewStub()
+	subscriptionPlanService := subscription_plan.NewSubscriptionPlanService(subscriptionPlanRepository)
+	subscriptionPlanRouter := subscription_plan.NewSubscriptionPlanRouter(subscriptionPlanService)
 	router.Group(func(r chi.Router) {
 		r.Use(middleware.AuthMiddleware)
 		router.Route("/payment", payment.PaymentRouter)
 	})
+	router.Route("/subscription-plan", subscriptionPlanRouter.Router)
 	router.Route("/user", userRouter.Router)
 
 	log.Printf("Server is running on port :8000\n")
