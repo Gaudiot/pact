@@ -29,10 +29,10 @@ func (m *MockRepository) GetByID(ctx context.Context, id string) (*Student, erro
 	return response, args.Error(1)
 }
 
-func (m *MockRepository) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) ([]*Student, error) {
+func (m *MockRepository) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (repository.PaginationResponse[Student], error) {
 	args := m.Called(ctx, params, pagination)
 
-	response, _ := args.Get(0).([]*Student)
+	response, _ := args.Get(0).(repository.PaginationResponse[Student])
 
 	return response, args.Error(1)
 }

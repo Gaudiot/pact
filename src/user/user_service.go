@@ -53,7 +53,7 @@ func (us *UserService) ListUsers(ctx context.Context, params ListUserParams) ([]
 	}
 
 	users := []User{}
-	for _, user := range repoUsers {
+	for _, user := range repoUsers.Data {
 		users = append(users, User{Id: user.ID, Name: user.Name, Email: user.Email})
 	}
 

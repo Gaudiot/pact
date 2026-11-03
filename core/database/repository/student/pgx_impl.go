@@ -82,7 +82,8 @@ func (sr *pgxStudentRepository) GetByID(ctx context.Context, id string) (*Studen
 	return &student, nil
 }
 
-func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) ([]*Student, error) {
+func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (repository.PaginationResponse[Student], error) {
+	result := repository.PaginationResponse[Student]{}
 	query := `
 		SELECT *
 		FROM users
@@ -95,7 +96,7 @@ func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersPa
 		query += fmt.Sprintf(" AND name ILIKE $%d", len(args))
 	}
 
-	args = append(args, pagination.Limit)
+	args = append(args, pagination.Limit+1)
 	query += fmt.Sprintf(" ORDER BY id LIMIT $%d", len(args))
 
 	args = append(args, pagination.Page*pagination.Limit)
@@ -103,11 +104,28 @@ func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersPa
 
 	rows, err := sr.pool.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 	defer rows.Close()
 
-	users := []*Student{}
+	countQuery := `
+		SELECT COUNT(*)
+		FROM users
+		WHERE 1=1
+	`
+	countArgs := []any{}
+	if params.Name != "" {
+		countArgs = append(countArgs, "%"+params.Name+"%")
+		countQuery += fmt.Sprintf(" AND name ILIKE $%d", len(countArgs))
+	}
+	var total int
+
+	err = sr.pool.QueryRow(ctx, countQuery, countArgs...).Scan(&total)
+	if err != nil {
+		return result, fmt.Errorf("count users: %w", err)
+	}
+
+	users := []Student{}
 	for rows.Next() {
 		var user Student
 
@@ -117,13 +135,21 @@ func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersPa
 			&user.Email,
 		)
 		if err != nil {
-			return nil, err
+			return result, err
 		}
 
-		users = append(users, &user)
+		users = append(users, user)
 	}
 
-	return users, nil
+	hasNextPage := len(users) > pagination.Limit
+	totalPages := (total + pagination.Limit - 1) / pagination.Limit
+	result = repository.PaginationResponse[Student]{
+		Data:        users,
+		HasNextPage: hasNextPage,
+		TotalPages:  totalPages,
+	}
+
+	return result, nil
 }
 
 func (sr *pgxStudentRepository) Close() {
