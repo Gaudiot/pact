@@ -30,5 +30,5 @@ var (
 type Repository interface {
 	Create(ctx context.Context, params *CreateStudentParams) (*Student, error)
 	GetByID(ctx context.Context, id string) (*Student, error)
-	GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (repository.PaginationResponse[Student], error)
+	GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (*repository.PaginationResponse[Student], error)
 }

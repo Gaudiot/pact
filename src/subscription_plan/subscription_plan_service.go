@@ -34,7 +34,7 @@ func (s *SubscriptionPlanService) ListPlans(ctx context.Context, params ListPlan
 	}
 
 	plans := []SubscriptionPlan{}
-	for _, plan := range result {
+	for _, plan := range result.Data {
 		plans = append(plans, SubscriptionPlan{
 			Id:           plan.Id,
 			Title:        plan.Title,

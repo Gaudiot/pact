@@ -38,19 +38,30 @@ func NewStub() *stub {
 	}
 }
 
-func (s *stub) GetAll(ctx context.Context, pagination *repository.Pagination) ([]SubscriptionPlan, error) {
+func (s *stub) GetAll(ctx context.Context, pagination *repository.Pagination) (*repository.PaginationResponse[SubscriptionPlan], error) {
 	p := []SubscriptionPlan{}
 	for _, plan := range s.subscriptionPlans {
 		p = append(p, plan)
 	}
 
+	totalPages := (len(s.subscriptionPlans) + pagination.Limit - 1) / pagination.Limit
+	hasNextPage := totalPages > (pagination.Page + 1)
+
 	start := pagination.Page * pagination.Limit
 	if start >= len(p) {
-		return nil, nil
+		return &repository.PaginationResponse[SubscriptionPlan]{
+			Data:        []SubscriptionPlan{},
+			HasNextPage: false,
+			TotalPages:  totalPages,
+		}, nil
 	}
 	end := min(start+pagination.Limit, len(p))
 	plans := p[start:end]
-	return plans, nil
+	return &repository.PaginationResponse[SubscriptionPlan]{
+		Data:        plans,
+		HasNextPage: hasNextPage,
+		TotalPages:  totalPages,
+	}, nil
 }
 
 func (s *stub) GetById(ctx context.Context, id string) (*SubscriptionPlan, error) {

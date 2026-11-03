@@ -13,10 +13,10 @@ type MockRepository struct {
 	mock.Mock
 }
 
-func (m *MockRepository) GetAll(ctx context.Context, pagination *repository.Pagination) ([]SubscriptionPlan, error) {
+func (m *MockRepository) GetAll(ctx context.Context, pagination *repository.Pagination) (*repository.PaginationResponse[SubscriptionPlan], error) {
 	args := m.Called(ctx, pagination)
 
-	response, _ := args.Get(0).([]SubscriptionPlan)
+	response, _ := args.Get(0).(*repository.PaginationResponse[SubscriptionPlan])
 
 	return response, args.Error(1)
 }

@@ -26,6 +26,6 @@ var (
 
 type Repository interface {
 	GetById(ctx context.Context, id string) (*SubscriptionPlan, error)
-	GetAll(ctx context.Context, pagination *repository.Pagination) ([]SubscriptionPlan, error)
+	GetAll(ctx context.Context, pagination *repository.Pagination) (*repository.PaginationResponse[SubscriptionPlan], error)
 	Create(ctx context.Context, params *CreateParams) (*SubscriptionPlan, error)
 }

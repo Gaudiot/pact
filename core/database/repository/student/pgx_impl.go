@@ -82,8 +82,7 @@ func (sr *pgxStudentRepository) GetByID(ctx context.Context, id string) (*Studen
 	return &student, nil
 }
 
-func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (repository.PaginationResponse[Student], error) {
-	result := repository.PaginationResponse[Student]{}
+func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (*repository.PaginationResponse[Student], error) {
 	query := `
 		SELECT *
 		FROM users
@@ -96,7 +95,7 @@ func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersPa
 		query += fmt.Sprintf(" AND name ILIKE $%d", len(args))
 	}
 
-	args = append(args, pagination.Limit+1)
+	args = append(args, pagination.Limit)
 	query += fmt.Sprintf(" ORDER BY id LIMIT $%d", len(args))
 
 	args = append(args, pagination.Page*pagination.Limit)
@@ -104,7 +103,7 @@ func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersPa
 
 	rows, err := sr.pool.Query(ctx, query, args...)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -122,7 +121,7 @@ func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersPa
 
 	err = sr.pool.QueryRow(ctx, countQuery, countArgs...).Scan(&total)
 	if err != nil {
-		return result, fmt.Errorf("count users: %w", err)
+		return nil, err
 	}
 
 	users := []Student{}
@@ -135,21 +134,20 @@ func (sr *pgxStudentRepository) GetUsers(ctx context.Context, params *GetUsersPa
 			&user.Email,
 		)
 		if err != nil {
-			return result, err
+			return nil, err
 		}
 
 		users = append(users, user)
 	}
 
-	hasNextPage := len(users) > pagination.Limit
 	totalPages := (total + pagination.Limit - 1) / pagination.Limit
-	result = repository.PaginationResponse[Student]{
+	hasNextPage := totalPages > (pagination.Page + 1)
+
+	return &repository.PaginationResponse[Student]{
 		Data:        users,
 		HasNextPage: hasNextPage,
 		TotalPages:  totalPages,
-	}
-
-	return result, nil
+	}, nil
 }
 
 func (sr *pgxStudentRepository) Close() {

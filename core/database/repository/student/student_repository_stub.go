@@ -61,7 +61,7 @@ func (s *stub) GetByID(ctx context.Context, id string) (*Student, error) {
 	return student, nil
 }
 
-func (s *stub) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (repository.PaginationResponse[Student], error) {
+func (s *stub) GetUsers(ctx context.Context, params *GetUsersParams, pagination *repository.Pagination) (*repository.PaginationResponse[Student], error) {
 	filteredStudents := []Student{}
 
 	for _, student := range s.students {
@@ -74,7 +74,7 @@ func (s *stub) GetUsers(ctx context.Context, params *GetUsersParams, pagination 
 
 	start := pagination.Page * pagination.Limit
 	if start >= len(filteredStudents) {
-		return repository.PaginationResponse[Student]{}, nil
+		return nil, nil
 	}
 	end := min(start+pagination.Limit, len(filteredStudents))
 	students := filteredStudents[start:end]
@@ -82,7 +82,7 @@ func (s *stub) GetUsers(ctx context.Context, params *GetUsersParams, pagination 
 	totalPages := (len(s.students) + pagination.Limit - 1) / pagination.Limit
 	hasNextPage := totalPages > (pagination.Page + 1)
 
-	return repository.PaginationResponse[Student]{
+	return &repository.PaginationResponse[Student]{
 		Data:        students,
 		HasNextPage: hasNextPage,
 		TotalPages:  totalPages,
